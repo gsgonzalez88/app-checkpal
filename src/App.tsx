@@ -1,25 +1,19 @@
-import { useState } from "react";
-import checkPalLogo from "./assets/checkpal.png";
-import "./App.css";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <>
-      <div>
-        <img
-          src={checkPalLogo}
-          className="logo"
-          alt="CheckPal logo"
-        />
-      </div>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          el contador es {count}
-        </button>
-      </div>
-    </>
+    <BrowserRouter>
+      {/* <Header /> */}
+      <main className="min-h-screen">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          {/* Futuras rutas como /agregar, /perfil, etc. */}
+        </Routes>
+      </main>
+      {/* <Footer /> */}
+    </BrowserRouter>
   );
 }
 
