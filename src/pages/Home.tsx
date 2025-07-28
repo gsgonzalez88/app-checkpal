@@ -1,17 +1,7 @@
-import checkPalLogo from "../assets/checkpal.png"
-import Header from "../components/Header";
-
 const Home = () => {
   return (
-    <div className="p-4">
-      <Header/>
-      <h1 className="text-2xl font-bold mb-4">CheckPal</h1>
-      <img
-          src={checkPalLogo}
-          className="logo"
-          alt="CheckPal logo"
-        />
-
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <h1 className="text-green-500 text-4xl font-bold">Checkpal</h1>
     </div>
   );
 };
