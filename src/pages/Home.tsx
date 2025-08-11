@@ -9,7 +9,7 @@ const Home = () => {
         console.log('Initializing Google Identity Services');
         
         window.google.accounts.id.initialize({
-          client_id: "test", // Replace with your actual Client ID
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID ,
           callback: handleGoogleSuccess,
         });
         
