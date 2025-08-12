@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
+import Welcome from './pages/Welcome';
 import './App.css';
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
       <main className="min-h-screen">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/start" element={<Welcome />} />
           {/* Futuras rutas como /agregar, /perfil, etc. */}
         </Routes>
       </main>
