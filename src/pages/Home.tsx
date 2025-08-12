@@ -1,46 +1,111 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { config, isGoogleConfigured, getErrorMessage } from '../config';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 
 const Home = () => {
   const googleInitialized = useRef(false);
+  const navigate = useNavigate();
+  const [showAlternativeButton, setShowAlternativeButton] = useState(false);
+
+  const handleGoogleSuccess = (credentialResponse: any) => {
+    console.log('=== GOOGLE LOGIN SUCCESS ===');
+    console.log('Full response:', credentialResponse);
+    
+    try {
+      if (!credentialResponse.credential) {
+        console.error('❌ No credential received in response');
+        console.log('Response keys:', Object.keys(credentialResponse));
+        alert('Authentication failed: No credential received. Please try again.');
+        return;
+      }
+
+      console.log('✅ Credential received, decoding...');
+      const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
+      console.log('✅ Decoded user info:', decoded);
+      
+      // Verificar que tenemos la información necesaria
+      if (!decoded.name || !decoded.email) {
+        console.error('❌ Missing user information in decoded token');
+        console.log('Available fields:', Object.keys(decoded));
+        alert('Authentication failed: Missing user information.');
+        return;
+      }
+      
+      console.log('✅ User info validated, saving to localStorage...');
+      // Guardar información del usuario en localStorage
+      const userInfo = {
+        name: decoded.name,
+        email: decoded.email,
+        picture: decoded.picture
+      };
+      localStorage.setItem('checkpal_user', JSON.stringify(userInfo));
+      console.log('✅ User info saved to localStorage');
+      
+      console.log('✅ Redirecting to /start...');
+      // Redirigir a la página de bienvenida
+      navigate('/start');
+    } catch (error) {
+      console.error('❌ Error during login process:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace'
+      });
+      alert(`Error during login: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
+    }
+  };
 
   useEffect(() => {
     const initializeGoogle = () => {
+      console.log('🔄 Attempting to initialize Google...');
+      console.log('Window object:', typeof window !== 'undefined');
+      console.log('Google object:', window.google);
+      console.log('Google accounts:', window.google?.accounts);
+      console.log('Google accounts id:', window.google?.accounts?.id);
+      console.log('Already initialized:', googleInitialized.current);
+      
       if (typeof window !== 'undefined' && window.google?.accounts?.id && !googleInitialized.current) {
-        console.log('Initializing Google Identity Services');
+        console.log('✅ Google Identity Services found, initializing...');
         
-        window.google.accounts.id.initialize({
-          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID ,
-          callback: handleGoogleSuccess,
-        });
+        if (!isGoogleConfigured()) {
+          console.error('❌ Google Client ID not configured');
+          alert(getErrorMessage());
+          return;
+        }
         
-        googleInitialized.current = true;
+        console.log('✅ Client ID configured, initializing Google...');
+        console.log('Client ID:', config.google.clientId);
+        
+        try {
+          window.google.accounts.id.initialize({
+            client_id: config.google.clientId,
+            callback: handleGoogleSuccess,
+          });
+          
+          googleInitialized.current = true;
+          console.log('✅ Google Identity Services initialized successfully');
+        } catch (error) {
+          console.error('❌ Error initializing Google:', error);
+          alert('Error initializing Google services. Please refresh the page.');
+        }
       } else if (!window.google?.accounts?.id) {
+        console.log('⏳ Google services not loaded yet, retrying in 100ms...');
         setTimeout(initializeGoogle, 100);
+      } else if (googleInitialized.current) {
+        console.log('✅ Google already initialized');
       }
     };
 
     initializeGoogle();
   }, []);
 
-  const handleGoogleSuccess = (credentialResponse: any) => {
-    console.log('Login Success:', credentialResponse);
-    
-    try {
-      const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
-      console.log('User Info:', decoded);
-      alert(`🔓 Welcome ${decoded.name}! You've unlocked Checkpal with ${decoded.email}`);
-    } catch (error) {
-      console.error('Error decoding token:', error);
-    }
+  const handleLockClick = () => {
+    setShowAlternativeButton(!showAlternativeButton);
   };
 
-  const handleLockClick = () => {
-    if (window.google?.accounts?.id) {
-      console.log('Triggering Google login from lock icon');
-      window.google.accounts.id.prompt();
-    } else {
-      alert('Google services not loaded. Please refresh the page and try again.');
-    }
+  const handleGoogleError = (error: any) => {
+    console.error('❌ Google Sign-In error:', error);
+    alert('Error con Google Sign-In. Por favor, intenta de nuevo.');
   };
 
   return (
@@ -79,10 +144,16 @@ const Home = () => {
             </svg>
           </div>
         </div>
-        
-        <div className="text-green-400 text-sm opacity-75 mt-4">
-          Click the lock to sign in with Google
-        </div>
+                
+        {/* Google Sign-In Button */}
+        {showAlternativeButton && (
+          <div className="mt-8">
+            <GoogleSignInButton 
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
