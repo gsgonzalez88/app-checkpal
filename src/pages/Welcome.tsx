@@ -32,6 +32,7 @@ const Welcome = () => {
     }
   }, [navigate]);
 
+
   const handleLogout = () => {
     // Limpiar datos del usuario
     localStorage.removeItem('checkpal_user');

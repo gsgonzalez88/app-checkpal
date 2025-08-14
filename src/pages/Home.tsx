@@ -99,6 +99,29 @@ const Home = () => {
     initializeGoogle();
   }, []);
 
+  const testN8nWebhook = async () => {
+    try {
+      // For GET requests, send data as URL parameters
+      const params = new URLSearchParams({
+        message: 'Hello from React Home!',
+        timestamp: new Date().toISOString(),
+        page: 'home'
+      });
+      
+      const response = await fetch(`http://localhost:5678/webhook-test/bbd89a22-ddd0-4000-9daa-8fa9f0b67620?${params}`, {
+        method: 'GET'
+        // No headers needed for simple GET request
+      });
+      
+      const data = await response.json();
+      console.log('n8n response:', data);
+      alert('Success! Check console for response');
+    } catch (error) {
+      console.error('Error calling n8n:', error);
+      alert('Error connecting to n8n');
+    }
+  };
+
   const handleLockClick = () => {
     setShowAlternativeButton(!showAlternativeButton);
   };
@@ -144,6 +167,17 @@ const Home = () => {
             </svg>
           </div>
         </div>
+
+        {/* Test n8n button */}
+        <button
+          onClick={testN8nWebhook}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors duration-200 flex items-center gap-2 mx-auto mb-4"
+        >
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+          Test n8n Webhook
+        </button>
                 
         {/* Google Sign-In Button */}
         {showAlternativeButton && (
